@@ -26,7 +26,7 @@ const weexFactoryPlugin = {
 }
 
 const aliases = require('./alias')
-const resolve = p => {
+const resolve = p => { //进行了一次映射
   const base = p.split('/')[0]
   if (aliases[base]) {
     return path.resolve(aliases[base], p.slice(base.length + 1))
@@ -35,6 +35,7 @@ const resolve = p => {
   }
 }
 
+// 所有创建的配置都在这里
 const builds = {
   // Runtime only (CommonJS). Used by bundlers e.g. Webpack & Browserify
   'web-runtime-cjs-dev': {

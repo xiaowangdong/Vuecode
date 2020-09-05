@@ -41,7 +41,7 @@ export function initLifecycle (vm: Component) {
     parent.$children.push(vm)
   }
 
-  vm.$parent = parent
+  vm.$parent = parent // 设置父级元素,将父级元素挂载到$parent上 结论:组件的创建是自上而下的,执行挂载是自下而上的
   vm.$root = parent ? parent.$root : vm
 
   vm.$children = []
@@ -64,9 +64,9 @@ export function lifecycleMixin (Vue: Class<Component>) {
     vm._vnode = vnode
     // Vue.prototype.__patch__ is injected in entry points
     // based on the rendering backend used.
-    if (!prevVnode) {
+    if (!prevVnode) { // 之前是否存在vdom
       // initial render
-      vm.$el = vm.__patch__(vm.$el, vnode, hydrating, false /* removeOnly */)
+      vm.$el = vm.__patch__(vm.$el, vnode, hydrating, false /* removeOnly */) // 数值的初始化
     } else {
       // updates
       vm.$el = vm.__patch__(prevVnode, vnode)
@@ -138,7 +138,7 @@ export function lifecycleMixin (Vue: Class<Component>) {
   }
 }
 
-export function mountComponent (
+export function mountComponent ( // 执行挂载  Execute mount
   vm: Component,
   el: ?Element,
   hydrating?: boolean
@@ -164,12 +164,12 @@ export function mountComponent (
       }
     }
   }
-  callHook(vm, 'beforeMount')
+  callHook(vm, 'beforeMount') // 调用钩子函数beforeMount
 
-  let updateComponent
+  let updateComponent // 更新组件
   /* istanbul ignore if */
   if (process.env.NODE_ENV !== 'production' && config.performance && mark) {
-    updateComponent = () => {
+    updateComponent = () => { // 更新组件此时仅做了声明,并没有进行调用,调用是在new Watcher实例创建之后,若以后有更新Wathcer就会让更新组件再次执行
       const name = vm._name
       const id = vm._uid
       const startTag = `vue-perf-start:${id}`
@@ -186,7 +186,7 @@ export function mountComponent (
       measure(`vue ${name} patch`, startTag, endTag)
     }
   } else {
-    updateComponent = () => {
+    updateComponent = () => { // 更新组件此时仅做了声明,并没有进行调用,调用是在new Watcher实例创建之后,若以后有更新Wathcer就会让更新组件再次执行  updateComponent is now declared and not invoked. It is invoked after the Watcher instance is created, and later updates to Watcher will cause updateComponent to execute again
       vm._update(vm._render(), hydrating)
     }
   }

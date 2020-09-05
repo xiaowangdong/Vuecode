@@ -27,7 +27,8 @@ export function initMixin (Vue: Class<Component>) {
     }
 
     // a flag to avoid this being observed
-    vm._isVue = true
+		vm._isVue = true
+		// 合并选项
     // merge options
     if (options && options._isComponent) {
       // optimize internal component instantiation
@@ -35,7 +36,7 @@ export function initMixin (Vue: Class<Component>) {
       // internal component options needs special treatment.
       initInternalComponent(vm, options)
     } else {
-      vm.$options = mergeOptions(
+      vm.$options = mergeOptions( // 在Vue的构造函数上会有一些选项,还有用户传入的一些选项,需要进行合并
         resolveConstructorOptions(vm.constructor),
         options || {},
         vm
@@ -47,16 +48,19 @@ export function initMixin (Vue: Class<Component>) {
     } else {
       vm._renderProxy = vm
     }
-    // expose real self
+		// expose real self
+		
     vm._self = vm
-    initLifecycle(vm)
-    initEvents(vm)
-    initRender(vm)
-    callHook(vm, 'beforeCreate')
-    initInjections(vm) // resolve injections before data/props
-    initState(vm)
-    initProvide(vm) // resolve provide after data/props
-    callHook(vm, 'created')
+    initLifecycle(vm) // 初始化生命周期  Initialization Lifecycle  声明:$parent,$root,$children,$refs  Statement:$parent,$root,$children,$refs
+    initEvents(vm) // 初始化事件  Initialization Event  处理(添加监听)父组件传入事件和回调
+    initRender(vm)  // 初始化render函数 Initialization render()  声明:$slots,$createElement()即render函数中的h
+		callHook(vm, 'beforeCreate') // 调用钩子函数beforeCreate,在beforeCreate中以上类似$parent都可以进行调用  Call the hook beforeCreate function,
+		
+		// 问题:为什么注入数据在前,提供数据在后?1.来自祖辈的参数需要做代理,挂载到当前组件实例上,传入的这些参数需要同组件data,attribute...中的数据进行判重2.从上面注入的数据还有可能会再提供给后代
+    initInjections(vm) // resolve injections before data/props  数据注入(注入的数据不会做响应式)
+    initState(vm)  // 重要:数据的初始化,响应式  Initialization and responsiveness of data
+    initProvide(vm) // resolve provide after data/props  提供数据
+    callHook(vm, 'created') // 此时所有的初始化完成  At this point all initialization is complete
 
     /* istanbul ignore if */
     if (process.env.NODE_ENV !== 'production' && config.performance && mark) {
@@ -66,7 +70,7 @@ export function initMixin (Vue: Class<Component>) {
     }
 
     if (vm.$options.el) {
-      vm.$mount(vm.$options.el)
+      vm.$mount(vm.$options.el) // 写了el:#xx 就不需要进行挂载了
     }
   }
 }

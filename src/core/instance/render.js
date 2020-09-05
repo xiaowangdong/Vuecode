@@ -21,7 +21,8 @@ export function initRender (vm: Component) {
   vm._staticTrees = null // v-once cached trees
   const options = vm.$options
   const parentVnode = vm.$vnode = options._parentVnode // the placeholder node in parent tree
-  const renderContext = parentVnode && parentVnode.context
+	const renderContext = parentVnode && parentVnode.context
+	// 与插槽相关的在此初始化
   vm.$slots = resolveSlots(options._renderChildren, renderContext)
   vm.$scopedSlots = emptyObject
   // bind the createElement fn to this instance
@@ -30,8 +31,9 @@ export function initRender (vm: Component) {
   // internal version is used by render functions compiled from templates
   vm._c = (a, b, c, d) => createElement(vm, a, b, c, d, false)
   // normalization is always applied for the public version, used in
-  // user-written render functions.
-  vm.$createElement = (a, b, c, d) => createElement(vm, a, b, c, d, true)
+	// user-written render functions.
+	// render(h) 此处的$createElement就是h
+  vm.$createElement = (a, b, c, d) => createElement(vm, a, b, c, d, true) // 关于vdom的创建
 
   // $attrs & $listeners are exposed for easier HOC creation.
   // they need to be reactive so that HOCs using them are always updated
