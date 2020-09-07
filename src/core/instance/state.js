@@ -47,9 +47,12 @@ export function proxy (target: Object, sourceKey: string, key: string) {
 
 export function initState (vm: Component) {
   vm._watchers = []
-  const opts = vm.$options
+	const opts = vm.$options
+
+	// 属性初始化 Properties initialization
   if (opts.props) initProps(vm, opts.props)
-  if (opts.methods) initMethods(vm, opts.methods)
+	if (opts.methods) initMethods(vm, opts.methods)
+	// 数据响应式 Data responsive
   if (opts.data) {
     initData(vm)
   } else {
@@ -110,10 +113,10 @@ function initProps (vm: Component, propsOptions: Object) {
 }
 
 function initData (vm: Component) {
-  let data = vm.$options.data
-  data = vm._data = typeof data === 'function'
-    ? getData(data, vm)
-    : data || {}
+  let data = vm.$options.data // 取出用户传入的数据 Remove user's incoming data
+  data = vm._data = typeof data === 'function' // 此处看data类型是函数还是以对象的形式(data(){return xx},data:{}) Here's whether the data type is a function or an object
+    ? getData(data, vm) // 为函数直接执行 Direct execution for functions
+    : data || {} // 对象形式直接使用 Direct use of object
   if (!isPlainObject(data)) {
     data = {}
     process.env.NODE_ENV !== 'production' && warn(
@@ -127,23 +130,23 @@ function initData (vm: Component) {
   const props = vm.$options.props
   const methods = vm.$options.methods
   let i = keys.length
-  while (i--) {
+  while (i--) { // 去重,防止属性与方法中会有重名  Removing weights to prevent duplicate names in properties and methods
     const key = keys[i]
     if (process.env.NODE_ENV !== 'production') {
-      if (methods && hasOwn(methods, key)) {
+      if (methods && hasOwn(methods, key)) { //如果有重名就警告  Warn if methods have duplicate name
         warn(
           `Method "${key}" has already been defined as a data property.`,
           vm
         )
       }
     }
-    if (props && hasOwn(props, key)) {
+    if (props && hasOwn(props, key)) { //Warn if properties have duplicate name
       process.env.NODE_ENV !== 'production' && warn(
         `The data property "${key}" is already declared as a prop. ` +
         `Use prop default value instead.`,
         vm
       )
-    } else if (!isReserved(key)) {
+    } else if (!isReserved(key)) { // 没有就进行代理 Agent without
       proxy(vm, `_data`, key)
     }
   }

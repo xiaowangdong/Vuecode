@@ -34,24 +34,36 @@ export function toggleObserving (value: boolean) {
  * object's property keys into getter/setters that
  * collect dependencies and dispatch updates.
  */
+
+ // 每一个响应式对象都会有一个ob
 export class Observer {
   value: any;
   dep: Dep;
   vmCount: number; // number of vms that have this object as root $data
 
   constructor (value: any) {
-    this.value = value
-    this.dep = new Dep()
-    this.vmCount = 0
-    def(value, '__ob__', this)
+		this.value = value
+		// 为什么在Observer里面声明dep?
+		// 如果对象里面新增或者删除属性，数组中有变更方法被调用（7个方法），则都需要通过dep进行通知
+		this.dep = new Dep()
+		
+		this.vmCount = 0
+		
+		// 设置了一个__ob__的属性引用了当前的Observer实例
+		def(value, '__ob__', this)
+
+		// 判断类型
     if (Array.isArray(value)) {
-      if (hasProto) {
+			// 替换数组对象原型
+      if (hasProto) { // 若有__proto__则执行替换
         protoAugment(value, arrayMethods)
-      } else {
+      } else { // 没有就添加
         copyAugment(value, arrayMethods, arrayKeys)
-      }
+			}
+			// 数组中元素还是对象则需要继续做响应化处理 If the elements in the arrat is an object ,you need to continue to respond
       this.observeArray(value)
     } else {
+			// 如果是对象直接处理
       this.walk(value)
     }
   }
@@ -86,7 +98,7 @@ export class Observer {
  */
 function protoAugment (target, src: Object) {
   /* eslint-disable no-proto */
-  target.__proto__ = src
+  target.__proto__ = src //将数组原型中的__proto__替换成覆盖过以后的原型对象
   /* eslint-enable no-proto */
 }
 
@@ -110,9 +122,11 @@ function copyAugment (target: Object, src: Object, keys: Array<string>) {
 export function observe (value: any, asRootData: ?boolean): Observer | void {
   if (!isObject(value) || value instanceof VNode) {
     return
-  }
+	}
+	
+	// 尝试获取观察者:数据发生变化负责更新通知 
   let ob: Observer | void
-  if (hasOwn(value, '__ob__') && value.__ob__ instanceof Observer) {
+  if (hasOwn(value, '__ob__') && value.__ob__ instanceof Observer) { // 不存在创建
     ob = value.__ob__
   } else if (
     shouldObserve &&
@@ -126,7 +140,7 @@ export function observe (value: any, asRootData: ?boolean): Observer | void {
   if (asRootData && ob) {
     ob.vmCount++
   }
-  return ob
+  return ob // 已经存在返回
 }
 
 /**
@@ -139,6 +153,7 @@ export function defineReactive (
   customSetter?: ?Function,
   shallow?: boolean
 ) {
+	// 和key一一对应
   const dep = new Dep()
 
   const property = Object.getOwnPropertyDescriptor(obj, key)
@@ -153,14 +168,19 @@ export function defineReactive (
     val = obj[key]
   }
 
+	// 属性拦截,只要是对象对象类型均会返回childOb
   let childOb = !shallow && observe(val)
   Object.defineProperty(obj, key, {
     enumerable: true,
     configurable: true,
     get: function reactiveGetter () {
-      const value = getter ? getter.call(obj) : val
+			// 获取key对应的值
+			const value = getter ? getter.call(obj) : val
+			// 如果存在依赖
       if (Dep.target) {
-        dep.depend()
+				// 依赖收集
+				dep.depend()
+				// 如果存在子ob，子ob也收集这个依赖
         if (childOb) {
           childOb.dep.depend()
           if (Array.isArray(value)) {
@@ -186,8 +206,11 @@ export function defineReactive (
         setter.call(obj, newVal)
       } else {
         val = newVal
-      }
-      childOb = !shallow && observe(newVal)
+			}
+			
+			// 如果新值是对象，也要做响应化
+			childOb = !shallow && observe(newVal)
+			// 通知更新
       dep.notify()
     }
   })

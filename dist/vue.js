@@ -919,19 +919,29 @@
    * object's property keys into getter/setters that
    * collect dependencies and dispatch updates.
    */
+
+   // 每一个响应式对象都会有一个ob
   var Observer = function Observer (value) {
-    this.value = value;
+  		this.value = value;
+  		// 为什么在Observer里面声明dep?
     this.dep = new Dep();
-    this.vmCount = 0;
-    def(value, '__ob__', this);
+  		this.vmCount = 0;
+  		
+  		// 设置了一个__ob__的属性引用了当前的Observer实例
+  		def(value, '__ob__', this);
+
+  		// 判断类型
     if (Array.isArray(value)) {
-      if (hasProto) {
+  			// 替换数组对象原型
+      if (hasProto) { // 若有__proto__则执行替换
         protoAugment(value, arrayMethods);
-      } else {
+      } else { // 没有就添加
         copyAugment(value, arrayMethods, arrayKeys);
-      }
+  			}
+  			// 数组中元素还是对象则需要继续做响应化处理 If the elements in the arrat is an object ,you need to continue to respond
       this.observeArray(value);
     } else {
+  			// 如果是对象直接处理
       this.walk(value);
     }
   };
@@ -965,7 +975,7 @@
    */
   function protoAugment (target, src) {
     /* eslint-disable no-proto */
-    target.__proto__ = src;
+    target.__proto__ = src; //将数组原型中的__proto__替换成覆盖过以后的原型对象
     /* eslint-enable no-proto */
   }
 
@@ -989,9 +999,11 @@
   function observe (value, asRootData) {
     if (!isObject(value) || value instanceof VNode) {
       return
-    }
+  	}
+  	
+  	// 尝试获取观察者:数据发生变化负责更新通知 
     var ob;
-    if (hasOwn(value, '__ob__') && value.__ob__ instanceof Observer) {
+    if (hasOwn(value, '__ob__') && value.__ob__ instanceof Observer) { // 不存在创建
       ob = value.__ob__;
     } else if (
       shouldObserve &&
@@ -1005,7 +1017,7 @@
     if (asRootData && ob) {
       ob.vmCount++;
     }
-    return ob
+    return ob // 已经存在返回
   }
 
   /**
@@ -4631,9 +4643,12 @@
 
   function initState (vm) {
     vm._watchers = [];
-    var opts = vm.$options;
+  	var opts = vm.$options;
+
+  	// 属性初始化 Properties initialization
     if (opts.props) { initProps(vm, opts.props); }
-    if (opts.methods) { initMethods(vm, opts.methods); }
+  	if (opts.methods) { initMethods(vm, opts.methods); }
+  	// 数据响应式 Data responsive
     if (opts.data) {
       initData(vm);
     } else {
@@ -4694,10 +4709,10 @@
   }
 
   function initData (vm) {
-    var data = vm.$options.data;
-    data = vm._data = typeof data === 'function'
-      ? getData(data, vm)
-      : data || {};
+    var data = vm.$options.data; // 取出用户传入的数据 Remove user's incoming data
+    data = vm._data = typeof data === 'function' // 此处看data类型是函数还是以对象的形式(data(){return xx},data:{}) Here's whether the data type is a function or an object
+      ? getData(data, vm) // 为函数直接执行 Direct execution for functions
+      : data || {}; // 对象形式直接使用 Direct use of object
     if (!isPlainObject(data)) {
       data = {};
        warn(
@@ -4711,23 +4726,23 @@
     var props = vm.$options.props;
     var methods = vm.$options.methods;
     var i = keys.length;
-    while (i--) {
+    while (i--) { // 去重,防止属性与方法中会有重名  Removing weights to prevent duplicate names in properties and methods
       var key = keys[i];
       {
-        if (methods && hasOwn(methods, key)) {
+        if (methods && hasOwn(methods, key)) { //如果有重名就警告  Warn if methods have duplicate name
           warn(
             ("Method \"" + key + "\" has already been defined as a data property."),
             vm
           );
         }
       }
-      if (props && hasOwn(props, key)) {
+      if (props && hasOwn(props, key)) { //Warn if properties have duplicate name
          warn(
           "The data property \"" + key + "\" is already declared as a prop. " +
           "Use prop default value instead.",
           vm
         );
-      } else if (!isReserved(key)) {
+      } else if (!isReserved(key)) { // 没有就进行代理 Agent without
         proxy(vm, "_data", key);
       }
     }
@@ -4992,15 +5007,21 @@
   		// expose real self
   		
       vm._self = vm;
-      initLifecycle(vm); // 初始化生命周期  Initialization Lifecycle  声明:$parent,$root,$children,$refs  Statement:$parent,$root,$children,$refs
-      initEvents(vm); // 初始化事件  Initialization Event  处理(添加监听)父组件传入事件和回调
-      initRender(vm);  // 初始化render函数 Initialization render()  声明:$slots,$createElement()即render函数中的h
+  		initLifecycle(vm); // 初始化生命周期  Initialization Lifecycle  声明:$parent,$root,$children,$refs  Statement:$parent,$root,$children,$refs
+  		
+  		initEvents(vm); // 初始化事件  Initialization Event  处理(添加监听)父组件传入事件和回调
+  		
+  		initRender(vm);  // 初始化render函数 Initialization render()  声明:$slots,$createElement()即render函数中的h
+  		
   		callHook(vm, 'beforeCreate'); // 调用钩子函数beforeCreate,在beforeCreate中以上类似$parent都可以进行调用  Call the hook beforeCreate function,
   		
   		// 问题:为什么注入数据在前,提供数据在后?1.来自祖辈的参数需要做代理,挂载到当前组件实例上,传入的这些参数需要同组件data,attribute...中的数据进行判重2.从上面注入的数据还有可能会再提供给后代
-      initInjections(vm); // resolve injections before data/props  数据注入(注入的数据不会做响应式)
-      initState(vm);  // 重要:数据的初始化,响应式  Initialization and responsiveness of data
-      initProvide(vm); // resolve provide after data/props  提供数据
+  		initInjections(vm); // resolve injections before data/props  数据注入(注入的数据不会做响应式)
+  		
+  		initState(vm);  // 重要:数据的初始化,响应式  Initialization and responsiveness of data
+  		
+  		initProvide(vm); // resolve provide after data/props  提供数据
+  		
       callHook(vm, 'created'); // 此时所有的初始化完成  At this point all initialization is complete
 
       /* istanbul ignore if */
@@ -5084,10 +5105,10 @@
   }
 
   initMixin(Vue); // 通过该方法给Vue构造函数添加_init方法 This method adds an _init method to the Vue constructor
-  stateMixin(Vue);
-  eventsMixin(Vue);
-  lifecycleMixin(Vue);
-  renderMixin(Vue);
+  stateMixin(Vue); // 和状态相关的混入,$set,$delete,$watch
+  eventsMixin(Vue); // $emit,$on,$off,$once
+  lifecycleMixin(Vue); // 与生命周期相关混入,更新和渲染 _update(),$forceUpdate(),$destroy()
+  renderMixin(Vue); // 与渲染函数相关 _render(),$nextTick()
 
   /*  */
 
