@@ -228,15 +228,15 @@ export function set (target: Array<any> | Object, key: any, val: any): any {
     warn(`Cannot set reactive property on undefined, null, or primitive value: ${(target: any)}`)
   }
   if (Array.isArray(target) && isValidArrayIndex(key)) {
-    target.length = Math.max(target.length, key)
+    target.length = Math.max(target.length, key) // 安全操作,防止传入的数组长度过大
     target.splice(key, 1, val)
     return val
   }
   if (key in target && !(key in Object.prototype)) {
-    target[key] = val
+    target[key] = val // 如果key在target中并且不在原型上就直接赋值
     return val
   }
-  const ob = (target: any).__ob__
+  const ob = (target: any).__ob__ // 如果target中的__ob__存在说明其本身为响应式对象
   if (target._isVue || (ob && ob.vmCount)) {
     process.env.NODE_ENV !== 'production' && warn(
       'Avoid adding reactive properties to a Vue instance or its root $data ' +
@@ -244,7 +244,7 @@ export function set (target: Array<any> | Object, key: any, val: any): any {
     )
     return val
   }
-  if (!ob) {
+  if (!ob) { // 不存在，即非响应式对象，进行赋值
     target[key] = val
     return val
   }

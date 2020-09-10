@@ -12,10 +12,10 @@ let pending = false
 
 function flushCallbacks () {
   pending = false
-  const copies = callbacks.slice(0)
+  const copies = callbacks.slice(0) // 拿到需要执行的微任务 Get the microtasks you need to perform
   callbacks.length = 0
-  for (let i = 0; i < copies.length; i++) {
-    copies[i]()
+  for (let i = 0; i < copies.length; i++) { //循环拿出每一个微任务 Cycle out each microtask
+    copies[i]() // 执行微任务  Perform Microtasks
   }
 }
 
@@ -39,9 +39,11 @@ let timerFunc
 // completely stops working after triggering a few times... so, if native
 // Promise is available, we will use it:
 /* istanbul ignore next, $flow-disable-line */
-if (typeof Promise !== 'undefined' && isNative(Promise)) {
-  const p = Promise.resolve()
+if (typeof Promise !== 'undefined' && isNative(Promise)) { // 当前运行环境是否支持Promise  Does the current running environment support Promise
+  const p = Promise.resolve() // 创建Promise的实例
   timerFunc = () => {
+
+		// 启动了一个微任务 Start Microtask
     p.then(flushCallbacks)
     // In problematic UIWebViews, Promise.then doesn't completely break, but
     // it can get stuck in a weird state where callbacks are pushed into the
@@ -98,7 +100,9 @@ export function nextTick (cb?: Function, ctx?: Object) {
     }
   })
   if (!pending) {
-    pending = true
+		pending = true
+		
+		// 异步函数 asynchronous function
     timerFunc()
   }
   // $flow-disable-line
@@ -108,3 +112,4 @@ export function nextTick (cb?: Function, ctx?: Object) {
     })
   }
 }
+

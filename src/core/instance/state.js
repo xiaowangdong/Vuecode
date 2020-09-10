@@ -35,6 +35,7 @@ const sharedPropertyDefinition = {
   set: noop
 }
 
+// 代理
 export function proxy (target: Object, sourceKey: string, key: string) {
   sharedPropertyDefinition.get = function proxyGetter () {
     return this[sourceKey][key]
@@ -345,27 +346,29 @@ export function stateMixin (Vue: Class<Component>) {
   Vue.prototype.$set = set
   Vue.prototype.$delete = del
 
+	// unwatch = vm.$watch('$route',function(newVal,oldVal){})
+	// vm.$watch('$route',{...})
   Vue.prototype.$watch = function (
-    expOrFn: string | Function,
-    cb: any,
-    options?: Object
+    expOrFn: string | Function, // 传入的可能是字符串也可能是函数
+    cb: any, // 回调函数
+    options?: Object // 选项
   ): Function {
     const vm: Component = this
-    if (isPlainObject(cb)) {
-      return createWatcher(vm, expOrFn, cb, options)
+    if (isPlainObject(cb)) { // 如果cb是一个对象
+      return createWatcher(vm, expOrFn, cb, options) // 通过createWatcher，创建Watcher
     }
     options = options || {}
-    options.user = true
+    options.user = true // 存在user:true说明为$watch
     const watcher = new Watcher(vm, expOrFn, cb, options)
-    if (options.immediate) {
+    if (options.immediate) {  // 如果选项中存在立即执行函数就直接调用watcher，否则值发生变化才调用
       try {
         cb.call(vm, watcher.value)
       } catch (error) {
         handleError(error, vm, `callback for immediate watcher "${watcher.expression}"`)
       }
     }
-    return function unwatchFn () {
-      watcher.teardown()
+    return function unwatchFn () {  //返回取消监听的unwatchFn函数
+      watcher.teardown() // unwatchFn核心方法是调用watcher.teardown()
     }
   }
 }

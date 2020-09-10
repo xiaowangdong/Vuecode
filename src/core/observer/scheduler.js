@@ -162,8 +162,10 @@ function callActivatedHooks (queue) {
  * pushed when the queue is being flushed.
  */
 export function queueWatcher (watcher: Watcher) {
-  const id = watcher.id
-  if (has[id] == null) {
+	const id = watcher.id
+	
+	// 去重 de-duplication
+  if (has[id] == null) { // 如果id不在has中,将其加入队列中
     has[id] = true
     if (!flushing) {
       queue.push(watcher)
@@ -183,7 +185,9 @@ export function queueWatcher (watcher: Watcher) {
       if (process.env.NODE_ENV !== 'production' && !config.async) {
         flushSchedulerQueue()
         return
-      }
+			}
+			
+			// 异步刷新队列 asynchronous refresh queue
       nextTick(flushSchedulerQueue)
     }
   }
