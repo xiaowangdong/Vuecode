@@ -178,7 +178,7 @@ export default class Watcher {
    */
   run () {
     if (this.active) {
-      const value = this.get()
+      const value = this.get() // get() 调用一下传入的getter
       if (
         value !== this.value ||
         // Deep watchers and watchers on Object/Arrays should fire even

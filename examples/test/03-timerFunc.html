@@ -27,7 +27,7 @@
             console.log(p1.innerHTML);
 
             this.$nextTick(() => {
-              // 这里才是最新的值,虽然第一次赋值时Watcher入队，以后Watcher无法再次入队，但是this.foo的值在实时更新所以只会显示第三个值。
+              // 这里才是最新的值,虽然第一次赋值时Watcher入队，以后Watcher无法再次入队，但是this.foo的值在实时更新所以只会显示第三个值(update() method in Watcher is executed three times)。
 
               console.log("p1.innerHTML:" + p1.innerHTML);
             });
