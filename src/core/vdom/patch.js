@@ -407,7 +407,7 @@ export function createPatchFunction (backend) {
 		// 四个指针
 		let oldStartIdx = 0
 		let newStartIdx = 0
-		let oldEndIdx = oldCh.length - 1
+		let oldEndIdx = oldCh.length - 1 // 因为索引值是从0开始所以需要-1
 		let oldStartVnode = oldCh[0]
 
 		// 四个节点
