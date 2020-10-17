@@ -1,3 +1,2 @@
-var p = 'web/runtime.js'
-var base = p.split('/')[0]
-console.log(base);
+var isSuc = 0
+if (!isSuc) return console.log(1);

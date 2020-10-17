@@ -402,21 +402,21 @@ export function createPatchFunction (backend) {
 	}
 
 
-	// 重排算法
+	// 重排算法		Rearrangement calculation
 	function updateChildren (parentElm, oldCh, newCh, insertedVnodeQueue, removeOnly) {
-		// 四个指针
+		// 四个指针		Four pointers
 		let oldStartIdx = 0
 		let newStartIdx = 0
 		let oldEndIdx = oldCh.length - 1 // 因为索引值是从0开始所以需要-1
 		let oldStartVnode = oldCh[0]
 
-		// 四个节点
+		// 四个节点		Four nodes
 		let oldEndVnode = oldCh[oldEndIdx]
 		let newEndIdx = newCh.length - 1
 		let newStartVnode = newCh[0]
 		let newEndVnode = newCh[newEndIdx]
 
-		// 循环中需要使用的变量
+		// 循环中需要使用的变量		Variables to be used in loops
 		let oldKeyToIdx, idxInOld, vnodeToMove, refElm
 
 		// removeOnly is a special flag used only by <transition-group>
@@ -428,18 +428,18 @@ export function createPatchFunction (backend) {
 			checkDuplicateKeys(newCh)
 		}
 
-		// 循环条件：开始索引不能大于结束索引
+		// 循环条件：开始索引不能大于结束索引		Loop condition: start index cannot be geater than end index
 		while (oldStartIdx <= oldEndIdx && newStartIdx <= newEndIdx) {
-			// 头尾的指针调整
+			// 头尾的指针调整		Head and tail pointer adjustment
 			if (isUndef(oldStartVnode)) {
 				oldStartVnode = oldCh[++oldStartIdx] // Vnode has been moved left
 			} else if (isUndef(oldEndVnode)) {
 				oldEndVnode = oldCh[--oldEndIdx]
-				// 头尾的比较的四种情况
-			} else if (sameVnode(oldStartVnode, newStartVnode)) { // 两个开头相同的情况
+				// 头尾的比较的四种情况		Four cases of head and tail comparsion
+			} else if (sameVnode(oldStartVnode, newStartVnode)) { // 两个开头相同的情况		Two cases with the same beginning
 				// patch
 				patchVnode(oldStartVnode, newStartVnode, insertedVnodeQueue, newCh, newStartIdx)
-				// 同时索引向后移动一位 
+				// 同时索引向后移动一位 At the same time,the index moves back one bit
 				oldStartVnode = oldCh[++oldStartIdx]
 				newStartVnode = newCh[++newStartIdx]
 			} else if (sameVnode(oldEndVnode, newEndVnode)) {
@@ -447,10 +447,10 @@ export function createPatchFunction (backend) {
 				oldEndVnode = oldCh[--oldEndIdx]
 				newEndVnode = newCh[--newEndIdx]
 			} else if (sameVnode(oldStartVnode, newEndVnode)) { // Vnode moved right
-				// 老的开始和新的结束相同，除了打补丁之外还要移动到队尾
+				// 老的开始和新的结束相同，除了打补丁之外还要移动到队尾		The old start is the same as the new one.In addition to patching,it has to move to the end of the team
 				patchVnode(oldStartVnode, newEndVnode, insertedVnodeQueue, newCh, newEndIdx)
 				canMove && nodeOps.insertBefore(parentElm, oldStartVnode.elm, nodeOps.nextSibling(oldEndVnode.elm))
-				// 索引的变化
+				// 索引的变化		Index of changes
 				oldStartVnode = oldCh[++oldStartIdx]
 				newEndVnode = newCh[--newEndIdx]
 			} else if (sameVnode(oldEndVnode, newStartVnode)) { // Vnode moved left
@@ -460,17 +460,17 @@ export function createPatchFunction (backend) {
 				newStartVnode = newCh[++newStartIdx]
 			} else {
 
-				// 四种猜想之后没有找到相同的，不得不开始循环查找
+				// 四种猜想之后没有找到相同的，不得不开始循环查找		After the four conjectures,they didn't find the same one,so they had to start a loop search
 				if (isUndef(oldKeyToIdx)) oldKeyToIdx = createKeyToOldIdx(oldCh, oldStartIdx, oldEndIdx)
-				// 查找在老的孩子数组种的索引
+				// 查找在老的孩子数组中的索引		Find the index in the old chidren's array
 				idxInOld = isDef(newStartVnode.key)
 					? oldKeyToIdx[newStartVnode.key]
 					: findIdxInOld(newStartVnode, oldCh, oldStartIdx, oldEndIdx)
 				if (isUndef(idxInOld)) { // New element
-					// 没有找到创建新元素并追加
+					// 没有找到则创建新元素并追加		If it is not found, a new element is created and appended
 					createElm(newStartVnode, insertedVnodeQueue, parentElm, oldStartVnode.elm, false, newCh, newStartIdx)
 				} else {
-					// 找到除了打补丁，还要移动到队首
+					// 找到了除了打补丁外，还要移动到队首		Be found,in addition to patching,it has to move to the head of the team
 					vnodeToMove = oldCh[idxInOld]
 					if (sameVnode(vnodeToMove, newStartVnode)) {
 						patchVnode(vnodeToMove, newStartVnode, insertedVnodeQueue, newCh, newStartIdx)
@@ -485,12 +485,12 @@ export function createPatchFunction (backend) {
 			}
 		}
 
-		// 重排结束，整理工作：必定有数组还剩下的元素未处理
-		if (oldStartIdx > oldEndIdx) { // 如果老的开始索引大于结束索引
+		// 重排结束，整理工作：必定有数组还剩下的元素未处理		Rearrangement end,finishing work:there must be an array of remaining elements not processed
+		if (oldStartIdx > oldEndIdx) { // 如果老的开始索引大于结束索引		If the old start index is greater than the end index
 			refElm = isUndef(newCh[newEndIdx + 1]) ? null : newCh[newEndIdx + 1].elm
-			addVnodes(parentElm, refElm, newCh, newStartIdx, newEndIdx, insertedVnodeQueue) // 批量创建
+			addVnodes(parentElm, refElm, newCh, newStartIdx, newEndIdx, insertedVnodeQueue) // 批量创建		Batch creation
 		} else if (newStartIdx > newEndIdx) {
-			removeVnodes(oldCh, oldStartIdx, oldEndIdx) // 批量删除
+			removeVnodes(oldCh, oldStartIdx, oldEndIdx) // 批量删除		Batch deletion
 		}
 	}
 
@@ -519,7 +519,7 @@ export function createPatchFunction (backend) {
 		}
 	}
 
-	// diff算法
+	// diff算法		Diff algorithm
 	function patchVnode (
 		oldVnode,
 		vnode,
@@ -539,7 +539,7 @@ export function createPatchFunction (backend) {
 
 		const elm = vnode.elm = oldVnode.elm
 
-		// 如果是占位符之类的
+		// 如果是占位符之类的		If it's placeholder or something
 		if (isTrue(oldVnode.isAsyncPlaceholder)) {
 			if (isDef(vnode.asyncFactory.resolved)) {
 				hydrate(oldVnode.elm, vnode, insertedVnodeQueue)
@@ -553,7 +553,7 @@ export function createPatchFunction (backend) {
 		// note we only do this if the vnode is cloned -
 		// if the new node is not cloned it means the render functions have been
 		// reset by the hot-reload-api and we need to do a proper re-render.
-		// 如果是静态节点
+		// 如果是静态节点		If it is a static node
 		if (isTrue(vnode.isStatic) &&
 			isTrue(oldVnode.isStatic) &&
 			vnode.key === oldVnode.key &&
@@ -564,47 +564,47 @@ export function createPatchFunction (backend) {
 		}
 
 
-		// 执行一些组件的钩子函数
+		// 执行一些组件的钩子函数		Perform hook funcitons of for some components
 		let i
 		const data = vnode.data
 		if (isDef(data) && isDef(i = data.hook) && isDef(i = i.prepatch)) {
 			i(oldVnode, vnode)
 		}
 
-		// 查找新旧节点是否存在孩子
+		// 查找新旧节点是否存在孩子	Find whether the old and new nodes have children node
 		const oldCh = oldVnode.children
 		const ch = vnode.children
 
-		// 属性更新 <div> <div style="color:blue" ></div> </div>
+		// 属性更新 	Property update	<div> <div style="color:blue" ></div> </div>
 		if (isDef(data) && isPatchable(vnode)) {
 			for (i = 0; i < cbs.update.length; ++i) cbs.update[i](oldVnode, vnode)
 			if (isDef(i = data.hook) && isDef(i = i.update)) i(oldVnode, vnode)
 		}
 
-		// 先判断是否元素(没有文本内容就是元素)
+		// 先判断是否元素(没有文本内容就是元素)	Frist,judge whether it is an element(no text content is an element)
 		if (isUndef(vnode.text)) {
-			// 双方是不是都有孩子
+			// 双方是不是都有孩子		Do both sides have children nodes
 			if (isDef(oldCh) && isDef(ch)) {
-				// 比子节点，重排(reorder)
+				// 比子节点，重排(reorder)		Ratio sub nodes
 				if (oldCh !== ch) updateChildren(elm, oldCh, ch, insertedVnodeQueue, removeOnly)
 			} else if (isDef(ch)) {
-				// 如果新节点有孩子，老节点没有
+				// 如果新节点有孩子，老节点没有		If the new node has children nodes, the old node does not
 				if (process.env.NODE_ENV !== 'production') {
 					checkDuplicateKeys(ch)
 				}
-				// 清空老节点文本
+				// 清空老节点文本		Empty the text content of the old node
 				if (isDef(oldVnode.text)) nodeOps.setTextContent(elm, '')
-				// 创建孩子并追加
+				// 创建孩子并追加		Create children node and add
 				addVnodes(elm, null, ch, 0, ch.length - 1, insertedVnodeQueue)
 			} else if (isDef(oldCh)) {
-				// 老节点有孩子，新节点没有孩子，删除即可
+				// 老节点有孩子，新节点没有孩子，删除即可		The old node has children node ,the new node does not,Delete it
 				removeVnodes(oldCh, 0, oldCh.length - 1)
 			} else if (isDef(oldVnode.text)) {
-				// 老节点存在文本，清空
+				// 老节点存在文本，清空		Old node has text,empty
 				nodeOps.setTextContent(elm, '')
 			}
 		} else if (oldVnode.text !== vnode.text) {
-			// 双方都是文本节点，更新文本
+			// 双方都是文本节点，更新文本		Both sides are text nodes,update text
 			nodeOps.setTextContent(elm, vnode.text)
 		}
 		if (isDef(data)) {
@@ -736,9 +736,9 @@ export function createPatchFunction (backend) {
 		}
 	}
 
-	// 为什么是返回patch？为了跨平台
+	// 为什么是返回patch？为了跨平台		why return to patch,For cross platform 
 	return function patch (oldVnode, vnode, hydrating, removeOnly) {
-		// 如果新的虚拟dom树不存在，则删除
+		// 如果新的虚拟dom树不存在，则删除		If the new vdom tree does not exist,Delete it
 		if (isUndef(vnode)) {
 			if (isDef(oldVnode)) invokeDestroyHook(oldVnode)
 			return
@@ -747,13 +747,13 @@ export function createPatchFunction (backend) {
 		let isInitialPatch = false
 		const insertedVnodeQueue = []
 
-		// 如果老的vdom树不存在，新增
+		// 如果老的vdom树不存在，新增		If the old vdom tree does not exist,add it
 		if (isUndef(oldVnode)) {
 			// empty mount (likely as component), create new root element
 			isInitialPatch = true
 			createElm(vnode, insertedVnodeQueue)
 		} else {
-			// 如果传入的是真实节点，则是初始化操作
+			// 如果传入的是真实节点，则是初始化操作		If a real node is passed in,it is an initialization operation
 			const isRealElement = isDef(oldVnode.nodeType)
 			if (!isRealElement && sameVnode(oldVnode, vnode)) {
 				// 存在新旧vdom，执行diff操作
